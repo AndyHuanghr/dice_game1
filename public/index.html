@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多人随机骰子大挑战</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 这里添加一点点额外的样式确保寄语美观 */
+        .slogan {
+            font-size: 1.2rem; 
+            opacity: 0.8; 
+            margin-bottom: 20px; 
+            font-style: italic; 
+            letter-spacing: 1px; 
+            color: #87ceeb; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <p class="slogan">
+            助力每一个天马行空，不知死活的梦想和说出埋藏心底真话的勇气与胆量
+        </p>
+        
+        <h1>🎲 疯狂骰子派对</h1>
+        <p>游戏规则：所有人进入房间后掷骰子。点数最小的倒霉蛋必须接受惩罚，而点数最大的“国王”将决定具体的惩罚内容！</p>
+    </header>
+
+    <main>
+        <div id="login-screen">
+            <div class="input-group">
+                <label>请输入你的昵称：</label>
+                <input type="text" id="nickname" placeholder="例如：追梦人">
+            </div>
+
+            <div class="room-selection">
+                <h3>是否有房间号？</h3>
+                <button id="btn-no-room" class="btn secondary">创建新房间</button>
+                <button id="btn-has-room" class="btn secondary">加入已有房间</button>
+            </div>
+
+            <div id="room-input-area" class="hidden">
+                <input type="number" id="room-code-input" placeholder="输入6位房间号">
+                <button id="btn-join" class="btn primary">立即进入</button>
+            </div>
+        </div>
+
+        <div id="game-screen" class="hidden">
+            <div class="room-info">房间号: <span id="current-room-id"></span></div>
+            <div id="players-list"></div>
+            <div class="controls">
+                <button id="btn-roll" class="btn primary">🎲 掷骰子</button>
+                <div id="my-status">等待所有人加入...</div>
+            </div>
+        </div>
+
+        <div id="modal-loser" class="modal hidden">
+            <div class="modal-content">
+                <h2>😱 你是受罚者！</h2>
+                <p>请选择你的命运：</p>
+                <button class="btn choice-btn" onclick="makeChoice('真心话')">❤️ 真心话</button>
+                <button class="btn choice-btn" onclick="makeChoice('大冒险')">🔥 大冒险</button>
+            </div>
+        </div>
+
+        <div id="modal-winner" class="modal hidden">
+            <div class="modal-content">
+                <h2>👑 你是国王！</h2>
+                <p>受罚者选择了：<strong id="loser-choice-display">...</strong></p>
+                <input type="text" id="challenge-input" placeholder="下达你的旨意...">
+                <button class="btn primary" onclick="submitChallenge()">发送指令</button>
+            </div>
+        </div>
+
+        <div id="result-display" class="hidden">
+            <h2>执行指令</h2>
+            <p id="final-challenge-text"></p>
+            <button class="btn secondary" onclick="location.reload()">再来一局</button>
+        </div>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
