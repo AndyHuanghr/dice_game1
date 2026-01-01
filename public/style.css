@@ -1,0 +1,130 @@
+/* 基础设置 */
+body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    max-width: 600px;
+}
+
+h1 {
+    color: #ffd700;
+    font-size: 2rem;
+    margin: 10px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+/* 核心：隐藏逻辑 */
+.hidden {
+    display: none !important;
+}
+
+/* 按钮样式 */
+.btn, button {
+    background: #4e4e91;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn:hover, button:hover {
+    background: #6363c5;
+    transform: translateY(-2px);
+}
+
+button:disabled {
+    background: #333;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 游戏卡片容器 */
+main {
+    background: #16213e;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+/* 输入框 */
+input[type="text"], input[type="number"] {
+    width: 80%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #4e4e91;
+    background: #0f3460;
+    color: white;
+    font-size: 1rem;
+}
+
+/* 弹窗样式 (最关键的部分) */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* 半透明遮罩 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #e94560; /* 醒目的惩罚色 */
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+    max-width: 300px;
+    width: 90%;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: white;
+}
+
+/* 玩家列表 */
+#players-list {
+    margin: 20px 0;
+    text-align: left;
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+/* 结果显示 */
+#result-display {
+    border: 2px solid #ffd700;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+#final-challenge-text {
+    font-size: 1.2rem;
+    color: #fff;
+    line-height: 1.6;
+}
