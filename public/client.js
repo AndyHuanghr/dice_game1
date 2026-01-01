@@ -1,59 +1,76 @@
 const socket = io();
 let currentRoomId = null;
+let myName = "";
 
-// UI切换逻辑
-document.getElementById('btn-has-room').onclick = () => document.getElementById('room-input-area').classList.remove('hidden');
-
-document.getElementById('btn-no-room').onclick = () => {
-    const name = document.getElementById('nickname').value || "无名氏";
-    socket.emit('createRoom', { name });
+// 聊天控制
+const chatSidebar = document.getElementById('chat-sidebar');
+const chatBox = document.getElementById('chat-box');
+document.getElementById('toggle-chat').onclick = () => {
+    chatBox.classList.toggle('hidden');
+    chatSidebar.classList.toggle('chat-collapsed');
 };
 
-document.getElementById('btn-join').onclick = () => {
-    const name = document.getElementById('nickname').value || "无名氏";
-    const roomId = document.getElementById('room-code-input').value;
-    if (roomId) socket.emit('joinRoom', { roomId, name });
-};
-
+// 自动匹配昵称显示
 socket.on('roomJoined', (data) => {
     currentRoomId = data.roomId;
+    myName = data.nickname;
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
     document.getElementById('current-room-id').innerText = data.roomId;
 });
 
-// 监听房间成员更新
-socket.on('updatePlayers', (players) => {
-    const list = document.getElementById('players-list');
-    list.innerHTML = players.map(p => `
-        <div style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid rgba(255,255,255,0.1);">
-            <span>👤 ${p.name} ${p.id === socket.id ? '(我)' : ''}</span>
-            <span style="color:${p.isReady ? '#4caf50' : '#888'}">${p.isReady ? '✅ 已掷' : '⌛ 等待中'}</span>
-        </div>
-    `).join('');
+// 聊天发送
+const sendMsg = (content, type = 'text') => {
+    if(!content) return;
+    socket.emit('chatMessage', { roomId: currentRoomId, sender: myName, content, type });
+};
+
+document.getElementById('send-msg').onclick = () => {
+    const input = document.getElementById('chat-input');
+    sendMsg(input.value);
+    input.value = "";
+};
+
+document.getElementById('file-input').onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => sendMsg(reader.result, file.type.startsWith('image') ? 'image' : 'video');
+    reader.readAsDataURL(file);
+};
+
+socket.on('newChatMessage', (data) => {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'msg-item';
+    let html = `<strong>${data.sender}:</strong> `;
+    if (data.type === 'text') html += `<span>${data.content}</span>`;
+    else if (data.type === 'image') html += `<img src="${data.content}" class="chat-media">`;
+    else if (data.type === 'video') html += `<video src="${data.content}" controls class="chat-media"></video>`;
+    msgDiv.innerHTML = html;
+    const container = document.getElementById('chat-messages');
+    container.appendChild(msgDiv);
+    container.scrollTop = container.scrollHeight;
 });
+
+// 游戏逻辑
+document.getElementById('btn-no-room').onclick = () => socket.emit('createRoom', { name: document.getElementById('nickname').value });
+document.getElementById('btn-has-room').onclick = () => document.getElementById('room-input-area').classList.remove('hidden');
+document.getElementById('btn-join').onclick = () => socket.emit('joinRoom', { roomId: document.getElementById('room-code-input').value, name: document.getElementById('nickname').value });
 
 document.getElementById('btn-roll').onclick = () => {
     socket.emit('rollDice', { roomId: currentRoomId });
     document.getElementById('btn-roll').disabled = true;
-    document.getElementById('btn-roll').innerText = "已投掷";
 };
 
-socket.on('allRolled', (data) => {
-    const myId = socket.id;
-    // 展示点数结果
-    const list = document.getElementById('players-list');
-    list.innerHTML = data.players.map(p => `
-        <div style="display:flex; justify-content:space-between; padding:5px;">
-            <span>👤 ${p.name}</span>
-            <span style="color:#ffd700; font-weight:bold;">${p.roll} 点</span>
-        </div>
-    `).join('');
+socket.on('updatePlayers', (players) => {
+    document.getElementById('players-list').innerHTML = players.map(p => `<div>👤 ${p.name}: ${p.roll || '⌛'}</div>`).join('');
+});
 
-    if (myId === data.loserId) {
-        document.getElementById('modal-loser').classList.remove('hidden');
-    } else {
-        document.getElementById('status-broadcast').innerText = `等待 ${data.loserName} 选择...`;
+socket.on('allRolled', (data) => {
+    if (socket.id === data.loserId) document.getElementById('modal-loser').classList.remove('hidden');
+    else if (socket.id === data.winnerId) {
+        document.getElementById('modal-winner').classList.remove('hidden');
+        document.getElementById('status-broadcast').innerText = "等待受罚者选择...";
     }
 });
 
@@ -78,24 +95,16 @@ function submitChallenge() {
 socket.on('finalResult', (data) => {
     document.getElementById('game-screen').classList.add('hidden');
     document.getElementById('result-display').classList.remove('hidden');
-    document.getElementById('final-challenge-text').innerHTML = `赢家 <strong style="color:#ffd700">${data.winnerName}</strong> 发出的指令：<br><br><span style="font-size:1.2rem;">${data.content}</span>`;
+    document.getElementById('final-challenge-text').innerText = `${data.winnerName} 的指令: ${data.content}`;
 });
 
-// 核心：再来一局的处理逻辑
-function handlePlayAgain() {
-    socket.emit('playAgain', { roomId: currentRoomId });
-}
+function handlePlayAgain() { socket.emit('playAgain', { roomId: currentRoomId }); }
 
-// 接收到重置信号，回到掷骰子界面
 socket.on('resetGameClient', () => {
     document.getElementById('result-display').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
-    // 恢复按钮状态
-    const rollBtn = document.getElementById('btn-roll');
-    rollBtn.disabled = false;
-    rollBtn.innerText = "🎲 掷骰子";
-    document.getElementById('status-broadcast').innerText = "新一局开始，请掷骰子！";
+    document.getElementById('btn-roll').disabled = false;
 });
 
-socket.on('systemBroadcast', (text) => document.getElementById('status-broadcast').innerText = text);
-socket.on('error', (msg) => alert(msg));
+socket.on('systemBroadcast', (t) => document.getElementById('status-broadcast').innerText = t);
+socket.on('error', (e) => alert(e));
