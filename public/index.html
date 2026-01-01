@@ -9,66 +9,69 @@
 <body>
 
     <header>
-        <p style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 15px; font-style: italic; color: #eee; text-align: center;">
-            “助力每一个天马行空，不知死活的梦想和说出埋藏心底真话的勇气与胆量”
-        </p>
+        <p style="font-size: 0.8rem; opacity: 0.7;">“助力每一个天马行空，不知死活的梦想和说出埋藏心底真话的勇气与胆量”</p>
         <h1>🎲 真心话大冒险</h1>
-        <div id="status-broadcast" style="color: #ffd700; margin-top: 10px; font-weight: bold;">等待开始...</div>
+        <div id="status-broadcast">等待开始...</div>
     </header>
 
-    <main>
-        <div id="login-screen">
-            <input type="text" id="nickname" placeholder="输入昵称">
-            <div style="margin-top: 10px;">
-                <button id="btn-no-room">创建房间</button>
-                <button id="btn-has-room">加入房间</button>
+    <div id="layout-container">
+        <main>
+            <div id="login-screen">
+                <input type="text" id="nickname" placeholder="昵称(留空随机)">
+                <div style="margin-top: 10px;">
+                    <button id="btn-no-room">创建房间</button>
+                    <button id="btn-has-room">加入房间</button>
+                </div>
+                <div id="room-input-area" class="hidden">
+                    <input type="number" id="room-code-input" placeholder="输入房间号">
+                    <button id="btn-join">进入</button>
+                </div>
             </div>
-            <div id="room-input-area" class="hidden" style="margin-top: 15px; border-top: 1px solid #4e4e91; padding-top: 15px;">
-                <input type="number" id="room-code-input" placeholder="输入6位房间号">
-                <button id="btn-join" class="btn primary">立即进入</button>
-            </div>
-        </div>
 
-        <div id="game-screen" class="hidden">
-            <p>房间号: <span id="current-room-id" style="color: #ffd700; font-size: 1.2rem; font-weight: bold;"></span></p>
-            
-            <div style="margin: 20px 0; border: 1px solid rgba(255,215,0,0.3); border-radius: 8px; padding: 10px;">
-                <h3 style="font-size: 0.9rem; margin: 0 0 10px 0; color: #aaa;">当前房间成员：</h3>
+            <div id="game-screen" class="hidden">
+                <p>房间号: <span id="current-room-id" style="color:#ffd700"></span></p>
                 <div id="players-list"></div>
+                <button id="btn-roll" class="btn-primary">🎲 掷骰子</button>
             </div>
 
-            <button id="btn-roll" class="btn primary" style="width: 100%;">🎲 掷骰子</button>
-        </div>
-
-        <div id="modal-loser" class="modal hidden">
-            <div class="modal-content">
-                <h2>😱 你是受罚者！</h2>
-                <p>请选择你的命运：</p>
-                <button onclick="makeChoice('真心话')">❤️ 真心话</button>
-                <button onclick="makeChoice('大冒险')">🔥 大冒险</button>
+            <div id="modal-loser" class="modal hidden">
+                <div class="modal-content">
+                    <h2>😱 你是受罚者！</h2>
+                    <button onclick="makeChoice('真心话')">真心话</button>
+                    <button onclick="makeChoice('大冒险')">大冒险</button>
+                </div>
             </div>
-        </div>
 
-        <div id="modal-winner" class="modal hidden">
-            <div class="modal-content" style="background: #4e4e91;">
-                <h2>🏆 你是赢家！</h2>
-                <p>受罚者选择了：<strong id="loser-choice-display" style="color: #ffd700;"></strong></p>
-                <input type="text" id="challenge-input" placeholder="输入处罚指令...">
-                <button class="btn primary" onclick="submitChallenge()">确认发送</button>
+            <div id="modal-winner" class="modal hidden">
+                <div class="modal-content" style="background:#4e4e91">
+                    <h2>🏆 你是赢家！</h2>
+                    <p>对方选了：<span id="loser-choice-display"></span></p>
+                    <input type="text" id="challenge-input" placeholder="输入惩罚内容">
+                    <button onclick="submitChallenge()">发布</button>
+                </div>
             </div>
-        </div>
 
-        <div id="result-display" class="hidden">
-            <div class="result-box">
+            <div id="result-display" class="hidden">
                 <h2>📢 最终指令</h2>
-                <p id="final-challenge-text" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px;"></p>
-                <div style="margin-top: 20px; display: flex; gap: 10px;">
-                    <button class="btn primary" style="flex: 1;" onclick="handlePlayAgain()">再来一局</button>
-                    <button class="btn secondary" style="flex: 1;" onclick="location.reload()">退出房间</button>
+                <p id="final-challenge-text"></p>
+                <button onclick="handlePlayAgain()">再来一局</button>
+                <button onclick="location.reload()">退出</button>
+            </div>
+        </main>
+
+        <div id="chat-sidebar" class="chat-collapsed">
+            <button id="toggle-chat">💬 聊天栏</button>
+            <div id="chat-box" class="hidden">
+                <div id="chat-messages"></div>
+                <div id="chat-controls">
+                    <input type="text" id="chat-input" placeholder="输入消息...">
+                    <label for="file-input" class="file-label">📎</label>
+                    <input type="file" id="file-input" accept="image/*,video/*" class="hidden">
+                    <button id="send-msg">发送</button>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
