@@ -10,22 +10,28 @@ const io = new Server(server);
 app.use(express.static(path.join(__dirname, 'public')));
 
 let rooms = {};
+const trendyNames = ["赛博猎人", "微醺派大星", "快乐修仙者", "代码诗人", "反卷精英", "深夜潜水员"];
 
 io.on('connection', (socket) => {
+    // 获取昵称逻辑
+    const getNickname = (name) => name && name.trim() !== "" ? name : trendyNames[Math.floor(Math.random() * trendyNames.length)];
+
     socket.on('createRoom', (data) => {
         const roomId = Math.floor(100000 + Math.random() * 900000).toString();
-        rooms[roomId] = { players: [{ id: socket.id, name: data.name, roll: null, isReady: false }] };
+        const nickname = getNickname(data.name);
+        rooms[roomId] = { players: [{ id: socket.id, name: nickname, roll: null, isReady: false }] };
         socket.join(roomId);
-        socket.emit('roomJoined', { roomId });
+        socket.emit('roomJoined', { roomId, nickname });
         io.to(roomId).emit('updatePlayers', rooms[roomId].players);
     });
 
     socket.on('joinRoom', (data) => {
         const room = rooms[data.roomId];
         if (room) {
-            room.players.push({ id: socket.id, name: data.name, roll: null, isReady: false });
+            const nickname = getNickname(data.name);
+            room.players.push({ id: socket.id, name: nickname, roll: null, isReady: false });
             socket.join(data.roomId);
-            socket.emit('roomJoined', { roomId: data.roomId });
+            socket.emit('roomJoined', { roomId: data.roomId, nickname });
             io.to(data.roomId).emit('updatePlayers', room.players);
         } else {
             socket.emit('error', '房间不存在');
@@ -42,46 +48,62 @@ io.on('connection', (socket) => {
             io.to(data.roomId).emit('updatePlayers', room.players);
 
             if (room.players.every(p => p.isReady)) {
-                let sorted = [...room.players].sort((a, b) => a.roll - b.roll);
-                room.loser = sorted[0]; 
-                room.winner = sorted[sorted.length - 1];
-                io.to(data.roomId).emit('allRolled', {
-                    players: room.players,
-                    loserId: room.loser.id,
-                    loserName: room.loser.name,
-                    winnerId: room.winner.id,
-                    winnerName: room.winner.name
-                });
+                // 检查是否有平局情况
+                const rolls = room.players.map(p => p.roll);
+                const maxRoll = Math.max(...rolls);
+                const minRoll = Math.min(...rolls);
+                const maxCount = rolls.filter(r => r === maxRoll).length;
+                const minCount = rolls.filter(r => r === minRoll).length;
+
+                if (maxCount > 1 || minCount > 1) {
+                    io.to(data.roomId).emit('systemBroadcast', "出现平局！系统正在重开...");
+                    setTimeout(() => {
+                        room.players.forEach(p => { p.roll = null; p.isReady = false; });
+                        io.to(data.roomId).emit('resetGameClient');
+                        io.to(data.roomId).emit('updatePlayers', room.players);
+                    }, 2000);
+                } else {
+                    let sorted = [...room.players].sort((a, b) => a.roll - b.roll);
+                    room.loser = sorted[0]; 
+                    room.winner = sorted[sorted.length - 1];
+                    io.to(data.roomId).emit('allRolled', {
+                        players: room.players,
+                        loserId: room.loser.id, loserName: room.loser.name,
+                        winnerId: room.winner.id, winnerName: room.winner.name
+                    });
+                }
             }
         }
     });
 
+    // 聊天逻辑
+    socket.on('chatMessage', (data) => {
+        io.to(data.roomId).emit('newChatMessage', {
+            sender: data.sender,
+            content: data.content,
+            type: data.type // 'text', 'image', 'video'
+        });
+    });
+
     socket.on('loserMadeChoice', (data) => {
         const room = rooms[data.roomId];
-        if(!room) return;
-        io.to(data.roomId).emit('systemBroadcast', `${room.loser.name} 选择了：${data.choice}`);
-        io.to(room.winner.id).emit('yourTurnToPunish', { choice: data.choice });
+        if(room) {
+            io.to(data.roomId).emit('systemBroadcast', `${room.loser.name} 选择了：${data.choice}`);
+            io.to(room.winner.id).emit('yourTurnToPunish', { choice: data.choice });
+        }
     });
 
     socket.on('winnerSetChallenge', (data) => {
         const room = rooms[data.roomId];
-        if(!room) return;
-        io.to(data.roomId).emit('finalResult', { winnerName: room.winner.name, content: data.content });
+        if(room) io.to(data.roomId).emit('finalResult', { winnerName: room.winner.name, content: data.content });
     });
 
-    // 核心修改：处理再来一局
     socket.on('playAgain', (data) => {
         const room = rooms[data.roomId];
         if (room) {
-            // 重置所有人的状态，但不踢人
-            room.players.forEach(p => {
-                p.roll = null;
-                p.isReady = false;
-            });
-            // 通知所有人回到游戏画面
+            room.players.forEach(p => { p.roll = null; p.isReady = false; });
             io.to(data.roomId).emit('resetGameClient');
             io.to(data.roomId).emit('updatePlayers', room.players);
-            io.to(data.roomId).emit('systemBroadcast', "新的一局开始了！");
         }
     });
 
