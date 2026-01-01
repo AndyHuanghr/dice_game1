@@ -1,164 +1,161 @@
 :root {
-    --primary-color: #e94560;
-    --secondary-color: #0f3460;
-    --accent-color: #ffd700;
-    --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-}
-
-* {
-    box-sizing: border-box;
-    transition: all 0.2s ease-in-out;
+    --primary: #e94560;
+    --secondary: #0f3460;
+    --accent: #ffd700;
+    --bg: #1a1a2e;
+    --glass: rgba(255, 255, 255, 0.05);
 }
 
 body {
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg-gradient);
-    color: #ffffff;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: #fff;
     margin: 0;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    overflow-x: hidden;
-}
-
-/* 顶部文案美化 */
-header p {
-    font-size: 0.9rem;
-    color: #aaa;
-    letter-spacing: 1px;
-    animation: fadeInDown 1s;
 }
 
 h1 {
-    font-size: 2.5rem;
-    margin: 10px 0;
-    background: linear-gradient(to right, #ffd700, #ff8c00);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.3));
+    color: var(--accent);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    font-size: 2.2rem;
 }
 
 #status-broadcast {
     background: rgba(255, 215, 0, 0.1);
-    padding: 5px 20px;
+    padding: 8px 20px;
     border-radius: 20px;
     border: 1px solid rgba(255, 215, 0, 0.2);
-    display: inline-block;
+    margin: 10px 0;
+    font-weight: bold;
+    color: var(--accent);
 }
 
-/* 主容器布局 */
+/* 布局控制 */
 #layout-container {
     display: flex;
     width: 100%;
-    max-width: 1200px;
-    gap: 25px;
+    max-width: 1000px;
+    gap: 20px;
     margin-top: 20px;
 }
 
 main {
     flex: 2;
-    background: var(--glass-bg);
+    background: var(--glass);
     backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
-    padding: 40px;
-    border-radius: 24px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* 输入框与按钮美化 */
-input[type="text"], input[type="number"] {
-    width: 100%;
-    max-width: 300px;
-    padding: 12px 20px;
-    background: rgba(0,0,0,0.2);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    color: white;
-    font-size: 1rem;
-    margin-bottom: 15px;
-}
-
-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
-}
-
-button {
-    padding: 12px 28px;
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.primary, #btn-roll, #send-msg {
-    background: var(--primary-color);
-    color: white;
-    box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
-}
-
-.primary:hover, #btn-roll:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(233, 69, 96, 0.6);
-}
-
-/* 聊天框增强 */
+/* 聊天侧边栏 */
 #chat-sidebar {
     flex: 1;
-    background: var(--glass-bg);
-    backdrop-filter: blur(15px);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    height: 650px;
+    background: rgba(15, 52, 96, 0.8);
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
+    height: 600px;
+    transition: 0.3s;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-collapsed {
+    flex: 0 0 60px !important;
 }
 
 #chat-messages {
-    padding: 20px;
-    background: transparent;
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background: rgba(0,0,0,0.2);
 }
 
 .msg-item {
-    background: rgba(255, 255, 255, 0.08);
-    margin-bottom: 12px;
-    border-radius: 12px 12px 12px 0;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.chat-media {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
     border-radius: 10px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+    font-size: 0.9rem;
 }
 
-/* 玩家列表美化 */
-#players-list div {
-    background: rgba(255, 255, 255, 0.03);
+/* 弹窗设计 - 核心解决权限显示 */
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* 必须最高 */
+}
+
+.modal-content {
+    background: #16213e;
+    padding: 40px;
+    border-radius: 24px;
+    border: 2px solid var(--primary);
+    text-align: center;
+    box-shadow: 0 0 30px var(--primary);
+    max-width: 400px;
+    width: 90%;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* 按钮样式 */
+button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 5px;
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.2);
+}
+
+button:disabled {
+    background: #444;
+    cursor: not-allowed;
+}
+
+input {
     padding: 12px;
-    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #4e4e91;
+    background: #0f3460;
+    color: white;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.player-item {
+    background: rgba(255, 255, 255, 0.05);
+    margin: 10px 0;
+    padding: 12px;
     border-radius: 10px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
 }
 
-/* 动画效果 */
-@keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* 移动端适配优化 */
-@media (max-width: 768px) {
-    #layout-container { flex-direction: column; }
-    main { padding: 20px; }
-    h1 { font-size: 1.8rem; }
+.chat-media {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 5px;
 }
