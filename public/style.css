@@ -1,130 +1,206 @@
-/* 基础设置 */
+/* 基础背景与文字设置 */
 body {
     font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
     background-color: #1a1a2e;
     color: #e0e0e0;
     margin: 0;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
     min-height: 100vh;
 }
 
 header {
     text-align: center;
-    margin-bottom: 30px;
-    max-width: 600px;
+    margin-bottom: 20px;
+    max-width: 800px;
 }
 
 h1 {
     color: #ffd700;
-    font-size: 2rem;
     margin: 10px 0;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
-/* 核心：隐藏逻辑 */
+/* 布局容器：左侧游戏，右侧聊天 */
+#layout-container {
+    display: flex;
+    width: 100%;
+    max-width: 1100px;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+/* 隐藏逻辑 */
 .hidden {
     display: none !important;
 }
 
-/* 按钮样式 */
-.btn, button {
-    background: #4e4e91;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    margin: 5px;
-    transition: all 0.3s ease;
+/* 主游戏区域 */
+main {
+    flex: 2;
+    background: #16213e;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    text-align: center;
+    min-width: 300px;
 }
 
-.btn:hover, button:hover {
-    background: #6363c5;
+/* 聊天侧边栏 */
+#chat-sidebar {
+    flex: 1;
+    background: #0f3460;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+}
+
+/* 聊天栏折叠状态 */
+.chat-collapsed {
+    flex: 0.1 !important;
+    min-width: 60px;
+    height: 50px !important;
+}
+
+#toggle-chat {
+    background: #4e4e91;
+    border: none;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+}
+
+/* 聊天消息区域 */
+#chat-box {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(0,0,0,0.2);
+}
+
+.msg-item {
+    background: rgba(255,255,255,0.05);
+    padding: 8px 12px;
+    border-radius: 8px;
+    word-break: break-all;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* 聊天中的多媒体 */
+.chat-media {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 5px;
+    margin-top: 5px;
+    display: block;
+}
+
+/* 聊天输入区 */
+#chat-controls {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #1a1a2e;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    background: #0f3460;
+    color: white;
+}
+
+.file-label {
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+/* 按钮样式 */
+button, .btn-primary {
+    background: #e94560;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #ff4d6d;
     transform: translateY(-2px);
 }
 
 button:disabled {
-    background: #333;
+    background: #444;
     cursor: not-allowed;
-    transform: none;
 }
 
-/* 游戏卡片容器 */
-main {
-    background: #16213e;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    width: 100%;
-    max-width: 450px;
-    text-align: center;
-}
-
-/* 输入框 */
+/* 输入框样式 */
 input[type="text"], input[type="number"] {
-    width: 80%;
-    padding: 12px;
-    margin: 10px 0;
+    padding: 10px;
     border-radius: 5px;
     border: 1px solid #4e4e91;
     background: #0f3460;
     color: white;
-    font-size: 1rem;
+    margin: 5px 0;
 }
 
-/* 弹窗样式 (最关键的部分) */
+/* 玩家列表显示 */
+#players-list {
+    margin: 20px 0;
+    background: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: left;
+}
+
+/* 弹窗样式 */
 .modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.85); /* 半透明遮罩 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
 }
 
 .modal-content {
-    background: #e94560; /* 醒目的惩罚色 */
-    padding: 40px;
+    background: #16213e;
+    padding: 30px;
     border-radius: 20px;
+    border: 2px solid #e94560;
     text-align: center;
-    box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
-    max-width: 300px;
-    width: 90%;
 }
 
-.modal-content h2 {
-    margin-top: 0;
-    color: white;
-}
-
-/* 玩家列表 */
-#players-list {
-    margin: 20px 0;
-    text-align: left;
-    background: rgba(255,255,255,0.05);
-    padding: 15px;
-    border-radius: 10px;
-}
-
-/* 结果显示 */
-#result-display {
-    border: 2px solid #ffd700;
-    padding: 20px;
-    border-radius: 10px;
-    margin-top: 20px;
-    background: rgba(255, 215, 0, 0.1);
-}
-
-#final-challenge-text {
-    font-size: 1.2rem;
-    color: #fff;
-    line-height: 1.6;
+/* 响应式适配 */
+@media (max-width: 768px) {
+    #layout-container {
+        flex-direction: column;
+    }
+    #chat-sidebar {
+        width: 100%;
+        height: 400px;
+    }
 }
