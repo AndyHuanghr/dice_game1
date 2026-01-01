@@ -1,0 +1,10 @@
+name: Keep Alive Render
+on:
+  schedule:
+    - cron: '*/10 * * * *' # 每10分钟执行一次
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Curl the URL
+        run: curl https://1a9tqeoyx-hhr.onrender.com/
