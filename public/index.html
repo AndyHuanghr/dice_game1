@@ -30,9 +30,14 @@
         </div>
 
         <div id="game-screen" class="hidden">
-            <p>房间号: <span id="current-room-id" style="color: #ffd700; font-size: 1.2rem;"></span></p>
-            <div id="players-list"></div>
-            <button id="btn-roll" class="btn primary" style="width: 100%; margin-top: 20px;">🎲 掷骰子</button>
+            <p>房间号: <span id="current-room-id" style="color: #ffd700; font-size: 1.2rem; font-weight: bold;"></span></p>
+            
+            <div style="margin: 20px 0; border: 1px solid rgba(255,215,0,0.3); border-radius: 8px; padding: 10px;">
+                <h3 style="font-size: 0.9rem; margin: 0 0 10px 0; color: #aaa;">当前房间成员：</h3>
+                <div id="players-list"></div>
+            </div>
+
+            <button id="btn-roll" class="btn primary" style="width: 100%;">🎲 掷骰子</button>
         </div>
 
         <div id="modal-loser" class="modal hidden">
@@ -48,14 +53,14 @@
             <div class="modal-content" style="background: #4e4e91;">
                 <h2>🏆 你是赢家！</h2>
                 <p>受罚者选择了：<strong id="loser-choice-display" style="color: #ffd700;"></strong></p>
-                <input type="text" id="challenge-input" placeholder="输入你想让他做的事...">
-                <button class="btn primary" onclick="submitChallenge()">发布指令</button>
+                <input type="text" id="challenge-input" placeholder="输入处罚指令...">
+                <button class="btn primary" onclick="submitChallenge()">确认发送</button>
             </div>
         </div>
 
         <div id="result-display" class="hidden">
             <div class="result-box">
-                <h2>📢 执行指令</h2>
+                <h2>📢 最终指令</h2>
                 <p id="final-challenge-text"></p>
                 <button class="btn secondary" onclick="location.reload()">再来一局</button>
             </div>
