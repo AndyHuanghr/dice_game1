@@ -9,67 +9,51 @@
 <body>
 
     <header>
-        <p style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 15px; font-style: italic; letter-spacing: 0.5px; color: #eee; text-align: center;">
+        <p style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 15px; font-style: italic; color: #eee; text-align: center;">
             “助力每一个天马行空，不知死活的梦想和说出埋藏心底真话的勇气与胆量”
         </p>
-        
         <h1>🎲 疯狂骰子派对</h1>
-        <p>游戏规则：所有人进入房间后掷骰子。点数最小的人选惩罚，点数最大的人出题目！</p>
-        
-        <div id="status-broadcast" style="color: #ffd700; margin-top: 15px; font-weight: bold; min-height: 1.2em;">
-            正在连接服务器...
-        </div>
+        <div id="status-broadcast" style="color: #ffd700; margin-top: 10px; font-weight: bold;">等待开始...</div>
     </header>
 
     <main>
         <div id="login-screen">
-            <div class="input-group">
-                <label>你的昵称：</label>
-                <input type="text" id="nickname" placeholder="输入昵称">
-            </div>
-            <div class="room-selection">
-                <button id="btn-no-room" class="btn secondary">创建新房间</button>
-                <button id="btn-has-room" class="btn secondary">输入房间号</button>
-            </div>
+            <input type="text" id="nickname" placeholder="输入昵称">
+            <button id="btn-no-room">创建房间</button>
+            <button id="btn-has-room">加入房间</button>
             <div id="room-input-area" class="hidden">
-                <input type="number" id="room-code-input" placeholder="6位房间号">
-                <button id="btn-join" class="btn primary">加入</button>
+                <input type="number" id="room-code-input" placeholder="输入房间号">
+                <button id="btn-join">进入</button>
             </div>
         </div>
 
         <div id="game-screen" class="hidden">
-            <div class="room-info">房间号: <span id="current-room-id"></span></div>
+            <p>房间号: <span id="current-room-id"></span></p>
             <div id="players-list"></div>
-            <div class="controls">
-                <button id="btn-roll" class="btn primary">🎲 掷骰子</button>
-                <div id="my-status">准备就绪后点击掷骰子</div>
-            </div>
+            <button id="btn-roll">🎲 掷骰子</button>
         </div>
 
         <div id="modal-loser" class="modal hidden">
             <div class="modal-content">
-                <h2>😱 你是点数最低的人！</h2>
-                <p>请选择你的受罚方式：</p>
-                <button class="btn choice-btn" onclick="makeChoice('真心话')">❤️ 真心话</button>
-                <button class="btn choice-btn" onclick="makeChoice('大冒险')">🔥 大冒险</button>
+                <h2>😱 你是最低分！</h2>
+                <button onclick="makeChoice('真心话')">真心话</button>
+                <button onclick="makeChoice('大冒险')">大冒险</button>
             </div>
         </div>
 
         <div id="modal-winner" class="modal hidden">
             <div class="modal-content">
-                <h2>👑 你是点数最高的国王！</h2>
-                <p>受罚者选择了：<strong id="loser-choice-display">...</strong></p>
-                <input type="text" id="challenge-input" placeholder="输入惩罚题目/内容...">
-                <button class="btn primary" onclick="submitChallenge()">发布命令</button>
+                <h2>👑 你是国王！</h2>
+                <p>对方选了：<span id="loser-choice-display"></span></p>
+                <input type="text" id="challenge-input" placeholder="输入惩罚内容">
+                <button onclick="submitChallenge()">发送惩罚</button>
             </div>
         </div>
 
         <div id="result-display" class="hidden">
-            <div class="result-box">
-                <h2>📢 最终处决指令</h2>
-                <p id="final-challenge-text"></p>
-                <button class="btn secondary" onclick="location.reload()">再来一局</button>
-            </div>
+            <h2>📢 执行结果</h2>
+            <p id="final-challenge-text"></p>
+            <button onclick="location.reload()">再来一局</button>
         </div>
     </main>
 
