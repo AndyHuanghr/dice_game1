@@ -12,20 +12,26 @@ app.use(express.static(path.join(__dirname, 'public')));
 let rooms = {};
 
 io.on('connection', (socket) => {
-    // 创建/加入房间逻辑
+    // 创建房间
     socket.on('createRoom', (data) => {
         const roomId = Math.floor(100000 + Math.random() * 900000).toString();
-        rooms[roomId] = { players: [{ id: socket.id, name: data.name, roll: null, isReady: false }] };
+        rooms[roomId] = { 
+            players: [{ id: socket.id, name: data.name, roll: null, isReady: false }] 
+        };
         socket.join(roomId);
         socket.emit('roomJoined', { roomId });
+        // 发送初始成员列表
+        io.to(roomId).emit('updatePlayers', rooms[roomId].players);
     });
 
+    // 加入房间
     socket.on('joinRoom', (data) => {
         const room = rooms[data.roomId];
         if (room) {
             room.players.push({ id: socket.id, name: data.name, roll: null, isReady: false });
             socket.join(data.roomId);
             socket.emit('roomJoined', { roomId: data.roomId });
+            // 向房间所有人广播最新成员列表
             io.to(data.roomId).emit('updatePlayers', room.players);
         } else {
             socket.emit('error', '房间不存在');
@@ -40,15 +46,14 @@ io.on('connection', (socket) => {
         if (player) {
             player.roll = Math.floor(Math.random() * 6) + 1;
             player.isReady = true;
+            // 每次有人掷骰子，更新显示状态
             io.to(data.roomId).emit('updatePlayers', room.players);
 
-            // 检查是否所有人都掷完了
             if (room.players.every(p => p.isReady)) {
                 let sorted = [...room.players].sort((a, b) => a.roll - b.roll);
-                room.loser = sorted[0]; // 最低分
-                room.winner = sorted[sorted.length - 1]; // 最高分
+                room.loser = sorted[0]; 
+                room.winner = sorted[sorted.length - 1];
 
-                // 核心：发送包含输家和赢家ID的数据
                 io.to(data.roomId).emit('allRolled', {
                     players: room.players,
                     loserId: room.loser.id,
@@ -60,21 +65,29 @@ io.on('connection', (socket) => {
         }
     });
 
-    // 接收输家的选择
     socket.on('loserMadeChoice', (data) => {
         const room = rooms[data.roomId];
         io.to(data.roomId).emit('systemBroadcast', `${room.loser.name} 选择了：${data.choice}`);
-        // 只给赢家发送“轮到你了”
         io.to(room.winner.id).emit('yourTurnToPunish', { choice: data.choice });
     });
 
-    // 接收国王的惩罚
     socket.on('winnerSetChallenge', (data) => {
         const room = rooms[data.roomId];
         io.to(data.roomId).emit('finalResult', {
             winnerName: room.winner.name,
             content: data.content
         });
+    });
+
+    // 断开连接处理
+    socket.on('disconnect', () => {
+        for (let roomId in rooms) {
+            const index = rooms[roomId].players.findIndex(p => p.id === socket.id);
+            if (index !== -1) {
+                rooms[roomId].players.splice(index, 1);
+                io.to(roomId).emit('updatePlayers', rooms[roomId].players);
+            }
+        }
     });
 });
 
