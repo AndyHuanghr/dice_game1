@@ -1,87 +1,47 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require("socket.io");
-
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
-
-app.use(express.static('public'));
-
-// 存储房间数据: { roomId: { players: [], rolls: {}, gameState: 'waiting' } }
-const rooms = {};
+// server.js 核心逻辑更新
+let rooms = {};
 
 io.on('connection', (socket) => {
-    console.log('有新用户连接:', socket.id);
+    // ... 前面的加入房间逻辑保持不变 ...
 
-    // 1. 加入房间
-    socket.on('joinRoom', ({ roomId, nickname }) => {
-        socket.join(roomId);
-        if (!rooms[roomId]) {
-            rooms[roomId] = { players: [], rolls: {}, choice: null };
-        }
-        
-        const player = { id: socket.id, nickname: nickname };
-        rooms[roomId].players.push(player);
-        
-        // 通知房间内所有人更新玩家列表
-        io.to(roomId).emit('updatePlayerList', rooms[roomId].players);
-        // 如果是中途加入，且已经有结果，可能需要同步状态（此处简化为重置）
-    });
-
-    // 2. 玩家掷骰子
-    socket.on('rollDice', ({ roomId }) => {
-        if (!rooms[roomId]) return;
-
-        const roll = Math.floor(Math.random() * 6) + 1;
-        rooms[roomId].rolls[socket.id] = roll;
-
-        // 告诉所有人这个玩家掷出了多少点
-        io.to(roomId).emit('playerRolled', { id: socket.id, roll: roll });
+    socket.on('rollDice', (data) => {
+        const room = rooms[data.roomId];
+        const player = room.players.find(p => p.id === socket.id);
+        player.roll = Math.floor(Math.random() * 6) + 1;
+        player.isReady = true;
 
         // 检查是否所有人都掷完了
-        if (Object.keys(rooms[roomId].rolls).length === rooms[roomId].players.length) {
-            calculateResults(roomId);
+        if (room.players.every(p => p.isReady)) {
+            // 计算最高和最低
+            let sorted = [...room.players].sort((a, b) => a.roll - b.roll);
+            room.loser = sorted[0]; // 点数最小
+            room.winner = sorted[sorted.length - 1]; // 点数最大
+
+            // 向所有人播报结果，并点名倒霉蛋
+            io.to(data.roomId).emit('allRolled', {
+                players: room.players,
+                loserId: room.loser.id,
+                loserName: room.loser.name,
+                winnerId: room.winner.id,
+                winnerName: room.winner.name
+            });
         }
     });
 
-    // 3. 计算结果
-    function calculateResults(roomId) {
-        const room = rooms[roomId];
-        let minVal = 7, maxVal = 0;
-        let minId = null, maxId = null;
-
-        // 简单的逻辑：如果有平局，取第一个找到的人
-        for (const [id, val] of Object.entries(room.rolls)) {
-            if (val < minVal) { minVal = val; minId = id; }
-            if (val > maxVal) { maxVal = val; maxId = id; }
-        }
-
-        // 发送结果给所有人
-        io.to(roomId).emit('gameResult', { minId, maxId, minVal, maxVal });
-        
-        // 重置由于下一轮
-        room.rolls = {}; 
-    }
-
-    // 4. 最低分玩家选择了真心话还是大冒险
-    socket.on('selectChoice', ({ roomId, choice }) => {
-        // choice 是 "真心话" 或 "大冒险"
-        io.to(roomId).emit('playerMadeChoice', { choice });
+    // 处理倒霉蛋的选择
+    socket.on('loserMadeChoice', (data) => {
+        const room = rooms[data.roomId];
+        io.to(data.roomId).emit('systemBroadcast', `${room.loser.name} 选择了：${data.choice}`);
+        // 只给赢家发指令框
+        io.to(room.winner.id).emit('yourTurnToPunish', { choice: data.choice });
     });
 
-    // 5. 最高分玩家发送了挑战内容
-    socket.on('sendChallenge', ({ roomId, challengeText }) => {
-        io.to(roomId).emit('receiveChallenge', { challengeText });
+    // 处理国王的惩罚指令
+    socket.on('winnerSetChallenge', (data) => {
+        const room = rooms[data.roomId];
+        io.to(data.roomId).emit('finalResult', {
+            winnerName: room.winner.name,
+            content: data.content
+        });
     });
-
-    // 断开连接处理
-    socket.on('disconnect', () => {
-        // 实际项目中需要在这里清理房间里的玩家数据
-    });
-});
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`服务器运行在 http://localhost:${PORT}`);
 });
